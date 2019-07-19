@@ -5,6 +5,7 @@ import pandas as pd
 from os import path
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
+from sklearn.neighbors import KNeighborsRegressor
 
 # Carregamento dos arquivos
 arquivos = path.join(path.abspath('.'), "dados")
@@ -53,6 +54,20 @@ model.fit(X, Y)
 
 x_new = [[22587.0]]
 print('Score: %s' % (model.predict(x_new)))
+
+predict = model.predict(X)
+
+# Plotagem dos dados com a linha de regressão
+plt.scatter(X, Y)
+plt.plot(X, predict, color = 'red')
+plt.xlabel('GDP per capita')
+plt.ylabel('Life satisfaction')
+plt.title('GDP per capita x Life satisfaction')
+plt.show()
+
+# Kluster Regressor
+model = KNeighborsRegressor(n_neighbors = 3)
+model.fit(X, Y)
 
 predict = model.predict(X)
 
