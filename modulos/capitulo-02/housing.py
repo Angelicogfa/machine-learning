@@ -175,6 +175,68 @@ encoder = OneHotEncoder(categories='auto')
 housing_cat_1hot = encoder.fit_transform(housing_cat_encoded.reshape(-1,1))
 housing_cat_1hot.toarray()
 
+from sklearn.base import BaseEstimator, TransformerMixin
+rooms_ix, bedrooms_ix, population_ix, household_ix = 3,4,5,6
+
+class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
+    def __init__(self, add_bedrooms_per_room = True):
+        self.add_bedrooms_per_room = add_bedrooms_per_room
+    
+    def fit(self, X, y = None):
+        return self
+
+    def transform(self, X: np.ndarray, y = None):
+        rooms_per_household = X[:,rooms_ix]/X[:,household_ix]
+        population_per_household = X[:,population_ix]/X[:, household_ix]
+        if self.add_bedrooms_per_room:
+            bedrooms_per_room = X[:,bedrooms_ix]/X[:,rooms_ix]
+            return np.c_[X, rooms_per_household, population_per_household, bedrooms_per_room]
+        else:
+            return np.c_[X, rooms_per_household, population_per_household]
+
+attr_adder = CombinedAttributesAdder(add_bedrooms_per_room=False)
+attr_adder.transform(housing.values)
+
+# pipelines de transformação
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+
+num_pepiline = Pipeline([
+    ('imputer', Imputer(strategy="median")),
+    ('attribs_adder', CombinedAttributesAdder()),
+    ('std_scaler', StandardScaler())
+])
+
+housing_num_tr = num_pepiline.fit_transform(housing_num)
+
+from sklearn.base import BaseEstimator, TransformerMixin
+
+class DataFrameSelector(BaseEstimator, TransformerMixin):
+    def __init__(self, attributes_names):
+        self.attributes_names = attributes_names
+    
+    def fit(self, X, y = None):
+        return self
+
+    def transform(self, X):
+        return X[self.attributes_names].values
+
+num_attribs = list(housing_num)
+cat_attribs = ["ocean_proximity"]
+
+num_pepiline = Pipeline([
+    ('selector', DataFrameSelector(num_attribs)),
+    ('imputer', Imputer(strategy='median')),
+    ('attribs_adder', CombinedAttributesAdder()),
+    ('std_scaler', StandardScaler())
+])
+
+from sklearn.pipeline import FeatureUnion
+
+full_pepiline = FeatureUnion(transformer_list=[
+    ('num_pipeline', num_pepiline)
+])
+
 
 
 
