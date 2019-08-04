@@ -231,12 +231,19 @@ num_pepiline = Pipeline([
     ('std_scaler', StandardScaler())
 ])
 
+cat_pipeline = Pipeline([
+    ('selector', DataFrameSelector(cat_attribs)),
+    ('cat_encoder', OneHotEncoder(sparse=False))
+])
+
 from sklearn.pipeline import FeatureUnion
 
 full_pepiline = FeatureUnion(transformer_list=[
-    ('num_pipeline', num_pepiline)
+    ('num_pipeline', num_pepiline),
+    ('cat_pipeline', cat_pipeline)
 ])
 
-
-
+housing_prepared = full_pepiline.fit_transform(housing)
+housing_prepared.shape
+pd.DataFrame(housing_prepared)
 
