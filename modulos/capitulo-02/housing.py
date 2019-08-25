@@ -327,3 +327,10 @@ display_scores(forest_rmse_score)
 display_scores(lin_rmse_score)
 display_scores(tree_rmse_scores)
 display_scores(forest_rmse_score)
+
+# Salvando o modelo
+from sklearn.externals import joblib
+
+local = path.join(path.abspath('.'), 'modulos\\capitulo-02\\my_model.pkl')
+joblib.dump(forest_reg, local)
+my_model_loaded = joblib.load(local)
