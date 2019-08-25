@@ -243,7 +243,87 @@ full_pepiline = FeatureUnion(transformer_list=[
     ('cat_pipeline', cat_pipeline)
 ])
 
-housing_prepared = full_pepiline.fit_transform(housing)
+housing_backup = housing.copy()
+housing_prepared = full_pepiline.fit_transform(housing_backup)
 housing_prepared.shape
-pd.DataFrame(housing_prepared)
 
+
+# Incluindo nomes das colunas
+hdf = pd.DataFrame(housing_prepared)
+colunas = num_attribs 
+colunas.append("rooms_per_household")
+colunas.append("population_per_household")
+colunas.append("bedrooms_per_room")
+
+for item in housing_categories:
+    if item not in colunas:
+        colunas.append(item)
+
+hdf.columns = colunas  
+hdf.head()
+
+# Treinando e avaliando o conjunto de treinamento
+
+from sklearn.linear_model import LinearRegression
+
+lin_reg = LinearRegression()
+lin_reg.fit(housing_prepared, housing_labels)
+
+from sklearn.metrics import mean_squared_error
+housing_predictions = lin_reg.predict(housing_prepared)
+lin_mse = mean_squared_error(housing_labels, housing_predictions)
+lin_rmse = np.sqrt(lin_mse)
+print(lin_rmse)
+
+# Avaliando com outro modelo
+from sklearn.tree import DecisionTreeRegressor
+
+tree_reg = DecisionTreeRegressor()
+tree_reg.fit(housing_prepared, housing_labels)
+
+housing_predictions = tree_reg.predict(housing_prepared)
+tree_mse = mean_squared_error(housing_labels, housing_predictions)
+tree_rmse = np.sqrt(tree_mse)
+print(tree_rmse)
+
+# Avaliando o modelo com validação cruzada
+
+from sklearn.model_selection import cross_val_score
+scores = cross_val_score(tree_reg, housing_prepared, housing_labels, 
+            scoring="neg_mean_squared_error", cv=10)
+tree_rmse_scores = np.sqrt(-scores)
+print(tree_rmse_scores)
+
+def display_scores(scores):
+    print('Scores: ', scores)
+    print('Mean: ', scores.mean())
+    print('Standard deviation: ', scores.std())
+
+display_scores(tree_rmse_scores)
+
+lin_score = cross_val_score(lin_reg, housing_prepared, housing_labels,
+                scoring="neg_mean_squared_error", cv = 10)
+lin_rmse_score = np.sqrt(-lin_score)
+display_scores(lin_rmse_score)
+
+# Testando o modelo com Ensemble Learning
+from sklearn.ensemble import RandomForestRegressor
+
+forest_reg = RandomForestRegressor()
+forest_reg.fit(housing_prepared, housing_labels)
+
+forest_prediction = forest_reg.predict(housing_prepared)
+forest_mse = mean_squared_error(housing_labels, forest_prediction)
+forest_rmse = np.sqrt(forest_mse)
+print(forest_rmse)
+
+forest_score = cross_val_score(forest_reg, housing_prepared, housing_labels, 
+                    scoring="neg_mean_squared_error", cv = 10)
+
+forest_rmse_score = np.sqrt(-forest_score)
+display_scores(forest_rmse_score)
+
+# Scores geral
+display_scores(lin_rmse_score)
+display_scores(tree_rmse_scores)
+display_scores(forest_rmse_score)
