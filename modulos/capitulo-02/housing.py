@@ -139,10 +139,10 @@ housing_labels = strat_train_set['median_house_value'].copy()
 # Podemos fazer isso usando os métodos dropna(), drop() e fillna()
 # exemplo:
 
-housing.dropna(subset=['total_bedrooms']) # opcao 1
-housing.drop('total_bedrooms', axis = 1) # opcao 2
-mediam = housing['total_bedrooms'].median()
-housing['total_bedrooms'].fillna(mediam, inplace=True) # opcao 3
+# housing.dropna(subset=['total_bedrooms']) # opcao 1
+# housing.drop('total_bedrooms', axis = 1) # opcao 2
+# mediam = housing['total_bedrooms'].median()
+# housing['total_bedrooms'].fillna(mediam, inplace=True) # opcao 3
 
 # obs: Se a opção 3, deve calcular o valor médio no conjunto de treinamento e usá-lo para
 # preencher os valores faltantes neste, mas não se esqueça de também  salvar o valor médio
@@ -243,8 +243,7 @@ full_pepiline = FeatureUnion(transformer_list=[
     ('cat_pipeline', cat_pipeline)
 ])
 
-housing_backup = housing.copy()
-housing_prepared = full_pepiline.fit_transform(housing_backup)
+housing_prepared = full_pepiline.fit_transform(housing)
 housing_prepared.shape
 
 
@@ -284,6 +283,8 @@ tree_reg.fit(housing_prepared, housing_labels)
 housing_predictions = tree_reg.predict(housing_prepared)
 tree_mse = mean_squared_error(housing_labels, housing_predictions)
 tree_rmse = np.sqrt(tree_mse)
+
+# O modelo sofreu super ajuste, ou seja, o modelo decorrou todos os dados
 print(tree_rmse)
 
 # Avaliando o modelo com validação cruzada
@@ -325,7 +326,9 @@ display_scores(forest_rmse_score)
 
 # Scores geral
 display_scores(lin_rmse_score)
+print('-'.center(25, '-'))
 display_scores(tree_rmse_scores)
+print('-'.center(25, '-'))
 display_scores(forest_rmse_score)
 
 # Salvando o modelo
@@ -334,3 +337,24 @@ from sklearn.externals import joblib
 local = path.join(path.abspath('.'), 'modulos\\capitulo-02\\my_model.pkl')
 joblib.dump(forest_reg, local)
 my_model_loaded = joblib.load(local)
+
+type(my_model_loaded)
+
+# Ajustando o modelo
+from sklearn.model_selection import GridSearchCV
+
+param_grid = [
+    { 'n_estimators': [3,10,30], 'max_features': [2,4,6,8] },
+    { 'bootstrap': [False], 'n_estimators': [3,10], 'max_features': [2,3,4] }
+]
+
+forest_reg = RandomForestRegressor()
+grid_search = GridSearchCV(forest_reg, param_grid, cv = 5, scoring='neg_mean_squared_error')
+grid_search.fit(housing_prepared, housing_labels)
+
+grid_search.best_params_
+grid_search.best_estimator_
+
+cvres = grid_search.cv_results_
+for mean_score, params in zip(cvres['mean_test_score'], cvres['params']):
+    print(np.sqrt(-mean_score), params)
