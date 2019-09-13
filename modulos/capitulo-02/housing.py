@@ -110,6 +110,7 @@ plt.show()
 
 # Buscando a correlação entre os dados
 corr_matrix = housing.corr()
+corr_matrix.head()
 
 # Visualizando as correlações
 from pandas.plotting import scatter_matrix
@@ -150,8 +151,8 @@ housing_labels = strat_train_set['median_house_value'].copy()
 # conjunto de testes quando quiser avaliar seu sistema e também quando o sistema entrar em
 # produção, para substituir os valores faltantes nos novos dados.
 
-from sklearn.preprocessing import Imputer
-imputer = Imputer(strategy = 'median')
+from sklearn.impute import SimpleImputer
+imputer = SimpleImputer(strategy = 'median')
 
 # criando uma copia sem variaveis categoricas
 housing_num = housing.drop('ocean_proximity', axis = 1)
@@ -171,9 +172,12 @@ housing_cat_encoded, housing_categories = housing_cat.factorize()
 
 # Onehot encoding
 from sklearn.preprocessing import OneHotEncoder
+
 encoder = OneHotEncoder(categories='auto')
 housing_cat_1hot = encoder.fit_transform(housing_cat_encoded.reshape(-1,1))
 housing_cat_1hot.toarray()
+
+encoder.categories_
 
 from sklearn.base import BaseEstimator, TransformerMixin
 rooms_ix, bedrooms_ix, population_ix, household_ix = 3,4,5,6
@@ -202,7 +206,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 num_pepiline = Pipeline([
-    ('imputer', Imputer(strategy="median")),
+    ('imputer', SimpleImputer(strategy="median")),
     ('attribs_adder', CombinedAttributesAdder()),
     ('std_scaler', StandardScaler())
 ])
@@ -226,7 +230,7 @@ cat_attribs = ["ocean_proximity"]
 
 num_pepiline = Pipeline([
     ('selector', DataFrameSelector(num_attribs)),
-    ('imputer', Imputer(strategy='median')),
+    ('imputer', SimpleImputer(strategy='median')),
     ('attribs_adder', CombinedAttributesAdder()),
     ('std_scaler', StandardScaler())
 ])
@@ -358,3 +362,26 @@ grid_search.best_estimator_
 cvres = grid_search.cv_results_
 for mean_score, params in zip(cvres['mean_test_score'], cvres['params']):
     print(np.sqrt(-mean_score), params)
+
+# Avaliando os melhores modelos
+feature_importance = grid_search.best_estimator_.feature_importances_
+feature_importance
+
+extra_attribs = ["rooms_per_hhold", "pop_per_hhold", "bedrroms_per_room"]
+cat_encoder = cat_pipeline.named_steps["cat_encoder"]
+cat_ones_hot_attribs = list(cat_encoder.categories_[0])
+attributes = num_attribs + extra_attribs + cat_ones_hot_attribs
+sorted(zip(feature_importance, attributes), reverse=True)
+
+# Avaliando o sistema no conjunto de testes
+final_model = grid_search.best_estimator_
+final_model
+
+X_test = strat_test_set.drop("median_house_value", axis = 1)
+y_test = strat_test_set["median_house_value"].copy()
+
+X_test_prepared = full_pepiline.transform(X_test)
+final_predictions = final_model.predict(X_test_prepared)
+final_mse = mean_squared_error(y_test, final_predictions)
+print(final_mse)
+
