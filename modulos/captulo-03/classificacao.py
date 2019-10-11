@@ -89,3 +89,31 @@ confusion_matrix(y_train_5, y_train_pred)
 precision_score(y_train_5, y_train_pred) # TP / (TP + FP)
 recall_score(y_train_5, y_train_pred) # TP / (TP + FN)
 f1_score(y_train_5, y_train_pred) # TP / (TP + (FN + FP) / 2)
+
+y_score = sgdc_class.decision_function([some_digit])
+threshold = 0
+y_some_digit_pred = (y_score > threshold)
+y_some_digit_pred
+
+threshold = 200000
+y_some_digit_pred = (y_score > threshold)
+y_some_digit_pred
+
+y_score = cross_val_predict(sgdc_class, X_train, y_train_5, cv=3, method='decision_function')
+
+from sklearn.metrics import precision_recall_curve
+precisions, recalls, thresholds = precision_recall_curve(y_train_5, y_score)
+
+def plot_precision_recall_vs_threshold(precisions, recalls, thresholds):
+    plt.plot(thresholds, precisions[:-1], 'b--', label='Precision')
+    plt.plot(thresholds, recalls[:-1], 'g-', label = 'Recall')
+    plt.xlabel('Threshold')
+    plt.legend(loc='center left')
+    plt.ylim([0, 1])
+
+plot_precision_recall_vs_threshold(precisions, recalls, thresholds)
+plt.show()
+
+y_train_pred_90 = (y_score > 70000)
+precision_score(y_train_5, y_train_pred_90)
+recall_score(y_train_5, y_train_pred_90)
