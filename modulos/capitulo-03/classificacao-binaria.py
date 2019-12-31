@@ -117,3 +117,39 @@ plt.show()
 y_train_pred_90 = (y_score > 70000)
 precision_score(y_train_5, y_train_pred_90)
 recall_score(y_train_5, y_train_pred_90)
+
+# Curva ROC
+from sklearn.metrics import roc_curve
+help(roc_curve)
+
+fpr, tpr, thresholds = roc_curve(y_train_5, y_score)
+
+def plot_roc_curve(fpr,tpr, label=None):
+    plt.plot(fpr, tpr, linewidth=2, label=label)
+    plt.plot([0,1], [0,1], 'k--')
+    plt.plot([0,1,0,1])
+    plt.axis([0,1,0,1])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+
+plot_roc_curve(fpr, tpr)
+plt.show()
+
+from sklearn.metrics import roc_auc_score
+roc_auc_score(y_train_5, y_score)
+
+# Validando com um RamdonForestClassifier
+from sklearn.ensemble import  RandomForestClassifier
+
+forest_clf = RandomForestClassifier(random_state=42)
+y_probas_forest = cross_val_predict(forest_clf, X_train, y_train, cv=3, method='predict_proba')
+
+y_scores_forest = y_probas_forest[:, 1]
+fpr_forest, tpr_forest, threshold_forest = roc_curve(y_train_5, y_scores_forest)
+
+plt.plot(fpr, tpr, 'b:', label='SGD')
+plot_roc_curve(fpr_forest, tpr_forest, "Random Forest")
+plt.legend(loc='lower right')
+plt.show()
+
+roc_auc_score(y_train_5, y_scores_forest)
