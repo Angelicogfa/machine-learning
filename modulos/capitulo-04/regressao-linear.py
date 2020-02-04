@@ -20,3 +20,4 @@
 # Função MSE de custo para um modelo de regressão linear
 # MSE(X, h0) = 1/m (somatoria m; i=1) (O (transposta) * x^i - y^i)²
 
+# lalalalalalal
