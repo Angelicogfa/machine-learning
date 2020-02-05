@@ -20,4 +20,38 @@
 # Função MSE de custo para um modelo de regressão linear
 # MSE(X, h0) = 1/m (somatoria m; i=1) (O (transposta) * x^i - y^i)²
 
-# lalalalalalal
+# Método dos mínimos quadrados
+# Para encontrar o valor de O, que minimiza a função de custo, existe uma função: Método dos minimos quadrados
+# Ô = (X (transposta) * X) ^ -1 * X (transposta) * y
+
+# Ô => é o valor de O que minimiza a função de custo
+# y => é o vetor dos valores do alvo contendo y^(1) a y^(m)
+
+import numpy as np
+import matplotlib.pyplot as plt
+X = 2 * np.random.rand(100, 1)
+y = 4 + 3 * X + np.random.randn(100, 1)
+
+plt.plot(X, y, 'b.')
+plt.ylabel('y')
+plt.xlabel('x1')
+plt.axis([0,2,0,15])
+plt.show()
+
+# Agora calcularemos o Ô usando o método dos minimos quadrados
+X_b = np.c_[np.ones((100,1)), X]
+theta_best = np.linalg.inv(X_b.T.dot(X_b)).dot(X_b.T).dot(y)
+
+
+X_new = np.array([[0], [2]])
+X_new_b = np.c_[np.ones((2,1)), X_new]
+y_predict = X_new_b.dot(theta_best)
+y_predict
+
+plt.plot(X_new, y_predict, 'r-')
+plt.plot(X, y, 'b.')
+plt.ylabel('y')
+plt.xlabel('x1')
+plt.legend()
+plt.axis([0,2,0,15])
+plt.show()
