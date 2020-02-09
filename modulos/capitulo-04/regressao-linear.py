@@ -214,4 +214,6 @@ plt.show()
 
 from sklearn.linear_model import SGDRegressor
 help(SGDRegressor)
-sgd_reg = SGDRegressor(max_iter=50, penalty=None, eta=0.1)
+sgd_reg = SGDRegressor(max_iter=50, penalty=None, eta0=0.1)
+sgd_reg.fit(X, y.ravel())
+sgd_reg.intercept_, sgd_reg.coef_
