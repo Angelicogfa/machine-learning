@@ -34,6 +34,7 @@ import matplotlib.pyplot as plt
 X = 2 * np.random.rand(100, 1)
 y = 4 + 3 * X + np.random.randn(100, 1)
 
+plt.title('Dados')
 plt.plot(X, y, 'b.')
 plt.ylabel('y')
 plt.xlabel('x1')
@@ -43,6 +44,7 @@ plt.show()
 # Agora calcularemos o Ô usando o método dos minimos quadrados
 X_b = np.c_[np.ones((100, 1)), X]
 theta_best = np.linalg.inv(X_b.T.dot(X_b)).dot(X_b.T).dot(y)
+print(theta_best)
 
 X_new = np.array([[0], [2]])
 X_new_b = np.c_[np.ones((2, 1)), X_new]
@@ -60,8 +62,19 @@ plt.show()
 # O código acima equivale a este:
 lin_reg = LinearRegression()
 lin_reg.fit(X, y)
-lin_reg.intercept_, lin_reg.coef_
-lin_reg.predict(X_new)
+print(lin_reg.intercept_, lin_reg.coef_)
+
+y_pred2 = lin_reg.predict(X)
+y_pred3 = lin_reg.coef_ * X + lin_reg.intercept_
+
+plt.plot(X, y_pred2, 'r-', linewidth=2, label='Predição Calculada')
+plt.plot(X, y, 'b.')
+plt.xlabel("$x_1$", fontsize=18)
+plt.ylabel("$y$", rotation=0, fontsize=18)
+plt.legend(loc='upper left', fontsize=14)
+plt.axis([0, 2, 0, 15])
+plt.show()
+
 
 # Gradiente Descendente
 # É um algoritmo de otimização muito genérico capaz de encontrar ótimas soluções para uma ampla gama
@@ -119,6 +132,7 @@ def plot_gradient_descent(theta, eta, theta_path=None):
             style = "b-" if iteration > 0 else "r--"
             plt.plot(X_new, y_predict, style)
         gradients = 2/m * X_b.T.dot(X_b.dot(theta) - y)
+        print(f'Gradiente: {gradients}')
         theta = theta - eta * gradients
         if theta_path is not None:
             theta_path.append(theta)
@@ -204,7 +218,12 @@ for epoch in range(n_epochs):
         theta = theta - eta * gradients
         theta_path_sgd.append(theta)                 
 
-plt.plot(X, y, "b.")                                 
+print(theta)
+b, w = theta
+y_pred = w * X + b
+
+plt.plot(X, y, "b.")
+plt.plot(X, y_pred, 'r-')                                 
 plt.xlabel("$x_1$", fontsize=18)                     
 plt.ylabel("$y$", rotation=0, fontsize=18)           
 plt.axis([0, 2, 0, 15])                              
@@ -213,7 +232,19 @@ plt.show()
 # Usando o algoritmo de Regressão linear usando o SGD (Gradiente Descendente Estocratico)
 
 from sklearn.linear_model import SGDRegressor
-help(SGDRegressor)
 sgd_reg = SGDRegressor(max_iter=50, penalty=None, eta0=0.1)
 sgd_reg.fit(X, y.ravel())
-sgd_reg.intercept_, sgd_reg.coef_
+print('Bias:',sgd_reg.intercept_)
+print('Peso:', sgd_reg.coef_)
+
+y_pred = sgd_reg.predict(X)
+
+plt.plot(X, y, "b.")
+plt.plot(X, y_pred, 'r-')                                 
+plt.xlabel("$x_1$", fontsize=18)                     
+plt.ylabel("$y$", rotation=0, fontsize=18)           
+plt.axis([0, 2, 0, 15])                              
+plt.show()
+
+
+# Gradiente descendente em minilotes
