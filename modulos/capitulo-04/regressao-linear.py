@@ -247,4 +247,37 @@ plt.axis([0, 2, 0, 15])
 plt.show()
 
 
-# Gradiente descendente em minilotes
+# Regressao Polinomial
+
+# Podemos usar um modelo linear para acomodar dados nao lineares. Uma maneira simples de fazer
+# isso é acrescentar potencias de cada caracteristica como novas caracteristicas. Essa técnica
+# é chamada de Regressao Polinomial
+
+m = 100
+X = 6 * np.random.rand(m, 1) - 3
+y = 0.5 * X ** 2 + X + 2 + np.random.randn(m, 1)
+
+plt.plot(X, y, 'b.')
+plt.show()
+
+from sklearn.preprocessing import PolynomialFeatures
+poly_features = PolynomialFeatures(degree=2, include_bias=False)
+x_poly = poly_features.fit_transform(X)
+
+ling_reg = LinearRegression()
+ling_reg.fit(x_poly, y)
+
+y_prev = ling_reg.predict(x_poly)
+
+x_new = np.linspace(-3,3,100).reshape(100,1)
+x_new_poly = poly_features.fit_transform(x_new)
+y_new = ling_reg.predict(x_new_poly)
+
+plt.plot(X, y, 'b.')
+plt.plot(x_new, y_new, 'r-', label='Prediction')
+plt.xlabel('$x_1$', fontsize=18)
+plt.ylabel('$y$', rotation=0,fontsize=18)
+plt.axis([-3,3,0,10])
+plt.legend(loc='upper left', fontsize=14)
+plt.show()
+
